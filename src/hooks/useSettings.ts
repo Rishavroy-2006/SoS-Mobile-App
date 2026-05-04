@@ -34,7 +34,28 @@ export function useSettings() {
 
   useEffect(() => {
     localStorage.setItem('appSettings', JSON.stringify(settings));
+    window.dispatchEvent(new Event('appSettingsChanged'));
   }, [settings]);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      try {
+        const saved = localStorage.getItem('appSettings');
+        if (saved) {
+          setSettings((prev) => {
+            const next = { ...defaultSettings, ...JSON.parse(saved) };
+            if (JSON.stringify(prev) !== JSON.stringify(next)) {
+              return next;
+            }
+            return prev;
+          });
+        }
+      } catch {}
+    };
+
+    window.addEventListener('appSettingsChanged', handleStorageChange);
+    return () => window.removeEventListener('appSettingsChanged', handleStorageChange);
+  }, []);
 
   const updateSetting = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));

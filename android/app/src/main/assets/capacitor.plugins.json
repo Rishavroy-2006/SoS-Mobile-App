@@ -2,5 +2,13 @@
 	{
 		"pkg": "@capacitor-community/contacts",
 		"classpath": "getcapacitor.community.contacts.ContactsPlugin"
+	},
+	{
+		"pkg": "@capacitor/app",
+		"classpath": "com.capacitorjs.plugins.app.AppPlugin"
+	},
+	{
+		"pkg": "@capacitor/haptics",
+		"classpath": "com.capacitorjs.plugins.haptics.HapticsPlugin"
 	}
 ]
