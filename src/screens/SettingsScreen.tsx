@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Key, Users, MapPinOff, Star, Trash2, Pointer, ShieldAlert, Mic, ChevronRight, X, Check, Palette, Vibrate } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useSettings, AppSettings } from '../hooks/useSettings';
+import { useSettings } from '../hooks/useSettings';
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -40,7 +40,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onNavigateConta
     }
   };
 
-  const toggle = <K extends keyof AppSettings>(key: K) => {
+  const toggle = (key: keyof typeof settings) => {
     if (typeof settings[key] === 'boolean') {
       updateSetting(key, !settings[key] as any);
     }

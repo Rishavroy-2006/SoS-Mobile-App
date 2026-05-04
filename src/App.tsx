@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import CalculatorScreen from './screens/CalculatorScreen';
 import EmergencyConfirm from './screens/EmergencyConfirm';
@@ -42,31 +42,22 @@ export default function App() {
     }
   }, [settings.theme]);
 
-  const currentScreenRef = useRef(currentScreen);
-  const lastBackPressRef = useRef(lastBackPress);
-
-  useEffect(() => {
-    currentScreenRef.current = currentScreen;
-    lastBackPressRef.current = lastBackPress;
-  }, [currentScreen, lastBackPress]);
-
   useEffect(() => {
     const handleBackButton = () => {
-      const screen = currentScreenRef.current;
-      if (screen === 'contacts') {
+      if (currentScreen === 'contacts') {
         setCurrentScreen('settings');
-      } else if (screen === 'settings') {
+      } else if (currentScreen === 'settings') {
         setCurrentScreen('calculator');
-      } else if (screen === 'emergency') {
+      } else if (currentScreen === 'emergency') {
         setCurrentScreen('calculator');
         setIsEmergencyActive(false);
-      } else if (screen === 'calculator') {
+      } else if (currentScreen === 'calculator') {
         const timeNow = new Date().getTime();
-        if (timeNow - lastBackPressRef.current < 2000) {
+        if (timeNow - lastBackPress < 2000) {
           CapacitorApp.exitApp();
         } else {
-          lastBackPressRef.current = timeNow;
           setLastBackPress(timeNow);
+          // Optional: toast here "Press back again to exit"
         }
       }
     };
@@ -75,7 +66,7 @@ export default function App() {
     return () => {
       listener.then(l => l.remove());
     };
-  }, []);
+  }, [currentScreen, lastBackPress]);
 
   const navigateTo = (screen: Screen) => {
     setCurrentScreen(screen);
