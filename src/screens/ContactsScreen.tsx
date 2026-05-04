@@ -12,11 +12,21 @@ interface Contact {
 }
 
 const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-  const [contacts, setContacts] = useState<Contact[]>([
-    { id: '1', name: 'Sarah Jenkins', phone: '+1 (555) 019-2834', active: true, initials: 'SJ' },
-    { id: '2', name: 'Michael Ross', phone: '+1 (555) 837-9912', active: false, initials: 'MR' },
-    { id: '3', name: 'Emma Davis', phone: '+1 (555) 231-4456', active: true, initials: 'ED' },
-  ]);
+  const [contacts, setContacts] = useState<Contact[]>(() => {
+    try {
+      const saved = localStorage.getItem('appContacts');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      { id: '1', name: 'Sarah Jenkins', phone: '+1 (555) 019-2834', active: true, initials: 'SJ' },
+      { id: '2', name: 'Michael Ross', phone: '+1 (555) 837-9912', active: false, initials: 'MR' },
+      { id: '3', name: 'Emma Davis', phone: '+1 (555) 231-4456', active: true, initials: 'ED' },
+    ];
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem('appContacts', JSON.stringify(contacts));
+  }, [contacts]);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -41,14 +51,43 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   };
 
   const pickContactFromPhone = async () => {
+    // Try Web API first if available and we are on web (mostly Chrome Android)
+    if ('contacts' in navigator && (navigator as any).contacts && (navigator as any).contacts.select) {
+      try {
+        const properties = ['name', 'tel'];
+        const options = { multiple: false };
+        const contacts = await (navigator as any).contacts.select(properties, options);
+        if (contacts && contacts.length > 0) {
+          const c = contacts[0];
+          const name = c.name?.[0] || '';
+          const phone = c.tel?.[0] || '';
+          if (name || phone) {
+            setIsAdding(true);
+            setEditName(name);
+            setEditPhone(phone);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Web contacts API failed", e);
+      }
+    }
+
     try {
       const permission = await Contacts.requestPermissions();
       if (permission.contacts === 'granted') {
-        const result = await Contacts.pickContact({ projection: { name: true, phones: true } });
+        const result = await Contacts.pickContact({
+          projection: { name: true, phones: true }
+        });
         if (result.contact) {
           const c = result.contact;
-          const name = c.name?.display || `${c.name?.given || ''} ${c.name?.family || ''}`.trim() || '';
-          const phone = c.phones?.[0]?.number || '';
+          const namePayload = c.name;
+          const name = namePayload?.display || `${namePayload?.given || ''} ${namePayload?.family || ''}`.trim() || '';
+          
+          let phone = '';
+          if (c.phones && c.phones.length > 0) {
+            phone = c.phones[0].number || '';
+          }
           
           if (name || phone) {
              setIsAdding(true);
@@ -57,12 +96,17 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           }
         }
       } else {
-        console.warn("Contact permission denied");
+        alert("Contact permission denied.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error picking contact:", error);
-      // Fallback for web or if plugin fails
-      alert("Could not access phone contacts. Please add manually.");
+      // Give a better error message so we know what specifically crashed natively
+      const msg = error?.message || "";
+      if (msg.includes("implemented")) {
+        alert("Native contact picker is not supported on this platform. Please add manually.");
+      } else {
+        alert(`Could not access contacts (${msg}). Please add manually.`);
+      }
     }
   };
 
