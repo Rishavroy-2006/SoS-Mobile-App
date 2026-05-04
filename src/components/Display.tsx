@@ -15,11 +15,11 @@ export const Display: React.FC<{
 }) => {
   return (
     <div className="flex flex-col items-end justify-end px-8 py-4 w-full mb-2">
-      <div className="text-on-surface-variant/70 text-sm font-light mb-1 h-5">
+      <div className="text-muted text-sm font-light mb-1 h-5">
         {expression}
       </div>
       <div className="relative flex items-center justify-end w-full">
-        <h1 className="text-white text-5xl md:text-6xl font-light tracking-tight truncate max-w-full">
+        <h1 className="text-on-surface text-5xl md:text-6xl font-light tracking-tight truncate max-w-full">
           {value}
         </h1>
         <div className="ml-4 flex flex-col items-center justify-center relative">
@@ -29,13 +29,13 @@ export const Display: React.FC<{
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={onDelete}
-            className="p-2 text-primary hover:bg-white/5 rounded-full transition-colors shrink-0"
+            className="p-2 text-primary hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors shrink-0"
           >
             <Delete size={28} />
           </motion.button>
         </div>
       </div>
-      <div className="w-full h-[1px] bg-white/10 mt-4" />
+      <div className="w-full h-[1px] bg-outline mt-4" />
     </div>
   );
 };

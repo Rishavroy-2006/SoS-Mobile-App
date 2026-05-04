@@ -1,5 +1,7 @@
 import { motion } from 'motion/react';
 import React from 'react';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { useSettings } from '../hooks/useSettings';
 
 interface KeyProps {
   label: string | React.ReactNode;
@@ -16,6 +18,7 @@ export const Key: React.FC<KeyProps> = ({
   className = '', 
   onLongPress 
 }) => {
+  const { settings } = useSettings();
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
   const longPressFiredRef = React.useRef(false);
 
@@ -24,6 +27,9 @@ export const Key: React.FC<KeyProps> = ({
     if (onLongPress) {
       timerRef.current = setTimeout(() => {
         longPressFiredRef.current = true;
+        if (settings.haptics) {
+          Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {});
+        }
         onLongPress();
       }, 1000);
     }
@@ -35,6 +41,9 @@ export const Key: React.FC<KeyProps> = ({
       timerRef.current = null;
     }
     if (!longPressFiredRef.current) {
+      if (settings.haptics) {
+        Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+      }
       onClick?.();
     }
   };
@@ -48,9 +57,9 @@ export const Key: React.FC<KeyProps> = ({
   };
 
   const bgColor = {
-    number: 'bg-[#333333] text-white',
-    operator: 'bg-[#FF9F0A] text-white',
-    modifier: 'bg-[#A5A5A5] text-black',
+    number: 'bg-key-num text-key-num-text',
+    operator: 'bg-primary text-white',
+    modifier: 'bg-key-mod text-key-mod-text',
   }[type];
 
   return (

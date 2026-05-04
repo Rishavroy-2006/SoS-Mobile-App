@@ -156,19 +156,19 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto bg-[#151515] text-[#e4e2e4]">
-      <header className="flex items-center gap-4 px-4 pt-12 pb-6 border-b border-[#2a2a2c]">
+    <div className="flex flex-col h-screen max-w-md mx-auto bg-background text-on-surface">
+      <header className="flex items-center gap-4 px-4 pt-12 pb-6 border-b border-outline">
         <button onClick={onBack} className="p-2 -ml-2 text-primary hover:bg-primary/10 rounded-full transition-colors">
           <ChevronLeft size={24} />
         </button>
-        <span className="font-semibold text-lg flex-1 mr-8 text-center text-[#e4e2e4]">Calculator</span>
+        <span className="font-semibold text-lg flex-1 mr-8 text-center">Calculator</span>
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 pb-12 pt-6">
         <h1 className="text-3xl font-bold mb-1">Trusted Contacts</h1>
-        <p className="text-[#dac3ad]/80 text-[15px] mb-8">Manage your safety network</p>
+        <p className="text-muted text-[15px] mb-8">Manage your safety network</p>
 
-        <p className="text-[#dac3ad]/60 text-[13px] mb-8 ml-2">
+        <p className="text-muted/80 text-[13px] mb-8 ml-2">
           Your contacts will be notified silently when emergency mode is triggered.
         </p>
 
@@ -180,14 +180,14 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               <form 
                 key={contact.id}
                 onSubmit={(e) => saveEdit(e, contact.id)}
-                className="bg-[#1f1f21] border border-[#2a2a2c] p-4 rounded-2xl flex flex-col gap-3 shadow-sm"
+                className="bg-surface border border-outline p-4 rounded-2xl flex flex-col gap-3 shadow-sm"
               >
                 <input 
                   type="text" 
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
                   placeholder="Contact Name"
-                  className="bg-[#151515] border border-[#2a2a2c] text-[#e4e2e4] text-[15px] px-3 py-2 rounded-xl focus:outline-none focus:border-primary placeholder:text-[#dac3ad]/40"
+                  className="bg-background border border-outline text-on-surface text-[15px] px-3 py-2 rounded-xl focus:outline-none focus:border-primary placeholder:text-muted/50"
                   autoFocus
                 />
                 <input 
@@ -195,7 +195,7 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   value={editPhone}
                   onChange={e => setEditPhone(e.target.value)}
                   placeholder="Phone Number"
-                  className="bg-[#151515] border border-[#2a2a2c] text-[#e4e2e4] text-[15px] font-mono px-3 py-2 rounded-xl focus:outline-none focus:border-primary placeholder:text-[#dac3ad]/40"
+                  className="bg-background border border-outline text-on-surface text-[15px] font-mono px-3 py-2 rounded-xl focus:outline-none focus:border-primary placeholder:text-muted/50"
                 />
                 <div className="flex items-center justify-between mt-1">
                   <button 
@@ -209,13 +209,13 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     <button 
                       type="button"
                       onClick={cancelEditAdd}
-                      className="px-4 py-2 text-[#dac3ad] bg-[#2a2a2c] rounded-xl text-sm font-medium hover:bg-[#333] transition-colors"
+                      className="px-4 py-2 text-muted bg-outline rounded-xl text-sm font-medium hover:bg-primary/10 transition-colors"
                     >
                       Cancel
                     </button>
                     <button 
                       type="submit"
-                      className="px-4 py-2 text-[#151515] bg-primary rounded-xl text-sm font-medium hover:bg-white transition-colors"
+                      className="px-4 py-2 text-white bg-primary rounded-xl text-sm font-medium hover:opacity-90 transition-colors"
                     >
                       Save
                     </button>
@@ -225,20 +225,20 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             ) : (
               <div 
                 key={contact.id}
-                className="bg-[#1f1f21] border border-[#2a2a2c] p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer hover:bg-primary/5 transition-colors group"
+                className="bg-surface border border-outline p-4 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer hover:bg-primary/5 transition-colors group"
                 onClick={() => toggleContact(contact.id)}
               >
                 <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className={`w-[46px] h-[46px] flex-shrink-0 rounded-full flex items-center justify-center font-bold text-[15px] ${contact.active ? 'bg-[#ffc688]/10 text-primary' : 'bg-[#2a2a2c] text-[#dac3ad]/50'}`}>
+                  <div className={`w-[46px] h-[46px] flex-shrink-0 rounded-full flex items-center justify-center font-bold text-[15px] ${contact.active ? 'bg-primary/10 text-primary' : 'bg-outline text-muted'}`}>
                     {contact.initials}
                   </div>
                   <div className="flex flex-col min-w-0 flex-1 mr-4">
-                    <div className="font-medium text-[15px] text-[#e4e2e4] truncate">{contact.name}</div>
-                    <div className="text-[12px] mt-[2px] text-[#dac3ad]/60 font-mono tracking-tight flex items-center gap-2">
+                    <div className="font-medium text-[15px] text-on-surface truncate">{contact.name}</div>
+                    <div className="text-[12px] mt-[2px] text-muted font-mono tracking-tight flex items-center gap-2">
                        {contact.phone}
                        <button 
                           onClick={(e) => startEdit(e, contact)}
-                          className="p-1 text-[#dac3ad]/40 hover:text-primary transition-colors focus:outline-none"
+                          className="p-1 text-muted/50 hover:text-primary transition-colors focus:outline-none"
                         >
                           <Edit2 size={12} />
                         </button>
@@ -246,10 +246,10 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   </div>
                 </div>
                 
-                <button className={`w-12 h-[26px] flex-shrink-0 rounded-full p-[2px] transition-colors ${contact.active ? 'bg-primary' : 'bg-[#151515] border border-[#2a2a2c]'}`}>
+                <button className={`w-12 h-[26px] flex-shrink-0 rounded-full p-[2px] transition-colors ${contact.active ? 'bg-primary' : 'bg-background border border-outline'}`}>
                   <motion.div 
                     layout
-                    className={`w-5 h-5 rounded-full ${contact.active ? 'bg-white ml-auto shadow-sm' : 'bg-[#2a2a2c]'}`}
+                    className={`w-5 h-5 rounded-full ${contact.active ? 'bg-white ml-auto shadow-sm' : 'bg-outline'}`}
                   />
                 </button>
               </div>
@@ -259,14 +259,14 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           {isAdding && (
             <form 
               onSubmit={saveAdd}
-              className="bg-[#1f1f21] border border-primary/30 p-4 rounded-2xl flex flex-col gap-3 shadow-sm mt-2"
+              className="bg-surface border border-primary/30 p-4 rounded-2xl flex flex-col gap-3 shadow-sm mt-2"
             >
               <input 
                 type="text" 
                 value={editName}
                 onChange={e => setEditName(e.target.value)}
                 placeholder="Contact Name"
-                className="bg-[#151515] border border-[#2a2a2c] text-[#e4e2e4] text-[15px] px-3 py-2 rounded-xl focus:outline-none focus:border-primary placeholder:text-[#dac3ad]/40"
+                className="bg-background border border-outline text-on-surface text-[15px] px-3 py-2 rounded-xl focus:outline-none focus:border-primary placeholder:text-muted/50"
                 autoFocus
               />
               <input 
@@ -274,19 +274,19 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 value={editPhone}
                 onChange={e => setEditPhone(e.target.value)}
                 placeholder="Phone Number"
-                className="bg-[#151515] border border-[#2a2a2c] text-[#e4e2e4] text-[15px] font-mono px-3 py-2 rounded-xl focus:outline-none focus:border-primary placeholder:text-[#dac3ad]/40"
+                className="bg-background border border-outline text-on-surface text-[15px] font-mono px-3 py-2 rounded-xl focus:outline-none focus:border-primary placeholder:text-muted/50"
               />
               <div className="flex items-center justify-end gap-2 mt-1">
                 <button 
                   type="button"
                   onClick={cancelEditAdd}
-                  className="px-4 py-2 text-[#dac3ad] bg-[#2a2a2c] rounded-xl text-sm font-medium hover:bg-[#333] transition-colors"
+                  className="px-4 py-2 text-muted bg-outline rounded-xl text-sm font-medium hover:bg-primary/10 transition-colors"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="px-4 py-2 text-[#151515] bg-primary rounded-xl text-sm font-medium hover:bg-white transition-colors flex items-center gap-1"
+                  className="px-4 py-2 text-white bg-primary rounded-xl text-sm font-medium hover:opacity-90 transition-colors flex items-center gap-1"
                 >
                   <Check size={16} /> Add
                 </button>
@@ -299,16 +299,16 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           <div className="flex flex-col gap-3 mt-6">
             <button 
               onClick={startAdd}
-              className="w-full py-[18px] bg-[#1f1f21] border border-dashed border-[#2a2a2c] rounded-2xl flex items-center justify-center gap-3 text-primary font-medium hover:bg-primary/10 transition-colors active:scale-[0.98]"
+              className="w-full py-[18px] bg-surface border border-dashed border-outline rounded-2xl flex items-center justify-center gap-3 text-primary font-medium hover:bg-primary/10 transition-colors active:scale-[0.98]"
             >
               <UserPlus size={20} />
               Add New Contact
             </button>
             <button 
               onClick={pickContactFromPhone}
-              className="w-full py-[18px] bg-[#1f1f21] border border-dashed border-[#2a2a2c] rounded-2xl flex items-center justify-center gap-3 text-[#e4e2e4] font-medium hover:bg-[#2a2a2c] transition-colors active:scale-[0.98]"
+              className="w-full py-[18px] bg-surface border border-dashed border-outline rounded-2xl flex items-center justify-center gap-3 text-on-surface font-medium hover:bg-outline transition-colors active:scale-[0.98]"
             >
-              <BookUser size={20} className="text-[#dac3ad]/80" />
+              <BookUser size={20} className="text-muted" />
               Import from Phone
             </button>
           </div>

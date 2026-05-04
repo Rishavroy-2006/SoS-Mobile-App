@@ -7,6 +7,8 @@ export interface AppSettings {
   silentLocation: boolean;
   autoVoice: boolean;
   policeDispatch: boolean;
+  theme: 'system' | 'light' | 'dark';
+  haptics: boolean;
 }
 
 const defaultSettings: AppSettings = {
@@ -16,13 +18,15 @@ const defaultSettings: AppSettings = {
   silentLocation: false,
   autoVoice: true,
   policeDispatch: false,
+  theme: 'system',
+  haptics: true,
 };
 
 export function useSettings() {
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
       const saved = localStorage.getItem('appSettings');
-      return saved ? JSON.parse(saved) : defaultSettings;
+      return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
     } catch {
       return defaultSettings;
     }

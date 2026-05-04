@@ -44,13 +44,13 @@ const CalculatorScreen: React.FC<CalculatorScreenProps> = ({ isEmergencyActive, 
       <header className="flex justify-between items-center px-6 py-4 pt-8 shrink-0 z-10">
         <button 
           onClick={isEmergencyActive ? undefined : onNavigateSettings} 
-          className={`p-2 -ml-2 rounded-full transition-colors relative z-10 ${isEmergencyActive ? 'opacity-0 pointer-events-none' : 'text-zinc-500 hover:bg-white/5'}`}
+          className={`p-2 -ml-2 rounded-full transition-colors relative z-10 ${isEmergencyActive ? 'opacity-0 pointer-events-none' : 'text-muted hover:bg-black/5 dark:hover:bg-white/5'}`}
         >
           <Menu size={22} />
         </button>
         <button 
           onClick={() => setIsHistoryOpen(!isHistoryOpen)} 
-          className={`p-2 -mr-2 rounded-full transition-colors relative z-10 ${isHistoryOpen ? 'text-primary bg-primary/10' : 'text-primary hover:bg-white/5'}`}
+          className={`p-2 -mr-2 rounded-full transition-colors relative z-10 ${isHistoryOpen ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5'}`}
         >
           {isHistoryOpen ? <X size={22} /> : <History size={22} />}
         </button>
@@ -61,16 +61,16 @@ const CalculatorScreen: React.FC<CalculatorScreenProps> = ({ isEmergencyActive, 
         <div className="absolute inset-0 top-[80px] bg-background z-20 flex flex-col px-6 pb-6">
           <div className="flex-1 overflow-y-auto flex flex-col gap-4 py-4">
             {calc.history.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center text-zinc-500 text-sm">
+              <div className="flex-1 flex items-center justify-center text-muted text-sm">
                 No History
               </div>
             ) : (
               calc.history.map((entry, index) => {
                 const [expression, result] = entry.split(' = ');
                 return (
-                  <div key={index} className="flex flex-col items-end gap-1 mb-4 border-b border-[#2a2a2c] pb-4 last:border-0">
-                    <div className="text-zinc-400 text-sm">{expression} =</div>
-                    <div className="text-2xl text-white font-medium">{result}</div>
+                  <div key={index} className="flex flex-col items-end gap-1 mb-4 border-b border-outline pb-4 last:border-0">
+                    <div className="text-muted text-sm">{expression} =</div>
+                    <div className="text-2xl text-on-surface font-medium">{result}</div>
                   </div>
                 );
               })
@@ -79,7 +79,7 @@ const CalculatorScreen: React.FC<CalculatorScreenProps> = ({ isEmergencyActive, 
           {calc.history.length > 0 && (
             <button 
               onClick={calc.clearHistory}
-              className="mt-auto mx-auto p-4 text-zinc-500 hover:text-error transition-colors rounded-full hover:bg-error/10"
+              className="mt-auto mx-auto p-4 text-muted hover:text-error transition-colors rounded-full hover:bg-error/10"
             >
               <Trash2 size={24} />
             </button>
