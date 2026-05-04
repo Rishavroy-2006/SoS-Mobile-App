@@ -9,3 +9,4 @@ coverage/
 android/app/src/main/assets/public/
 android/capacitor.settings.gradle
 android/app/capacitor.build.gradle
+.vscode
