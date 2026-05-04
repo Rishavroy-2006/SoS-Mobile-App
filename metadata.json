@@ -1,0 +1,6 @@
+{
+  "name": "Aegis — Mobile Calculator",
+  "description": "A high-fidelity calculator with a hidden emergency safety layer. Includes panic triggers, silent alerts, and secure location capture.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "majorCapabilities": []
+}
