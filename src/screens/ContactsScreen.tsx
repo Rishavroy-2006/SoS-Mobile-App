@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, UserPlus, Trash2, Edit2, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronLeft, UserPlus, Trash2, Edit2, Check, BookUser } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Contacts } from '@capacitor-community/contacts';
 
 interface Contact {
   id: string;
@@ -37,6 +38,32 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setIsAdding(true);
     setEditName('');
     setEditPhone('');
+  };
+
+  const pickContactFromPhone = async () => {
+    try {
+      const permission = await Contacts.requestPermissions();
+      if (permission.contacts === 'granted') {
+        const result = await Contacts.pickContact({ projection: { name: true, phones: true } });
+        if (result.contact) {
+          const c = result.contact;
+          const name = c.name?.display || `${c.name?.given || ''} ${c.name?.family || ''}`.trim() || '';
+          const phone = c.phones?.[0]?.number || '';
+          
+          if (name || phone) {
+             setIsAdding(true);
+             setEditName(name);
+             setEditPhone(phone);
+          }
+        }
+      } else {
+        console.warn("Contact permission denied");
+      }
+    } catch (error) {
+      console.error("Error picking contact:", error);
+      // Fallback for web or if plugin fails
+      alert("Could not access phone contacts. Please add manually.");
+    }
   };
 
   const getInitials = (name: string) => {
@@ -225,13 +252,22 @@ const ContactsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
 
         {!isAdding && (
-          <button 
-            onClick={startAdd}
-            className="w-full mt-6 py-[18px] bg-[#1f1f21] border border-dashed border-[#2a2a2c] rounded-2xl flex items-center justify-center gap-3 text-primary font-medium hover:bg-primary/10 transition-colors active:scale-[0.98]"
-          >
-            <UserPlus size={20} />
-            Add New Contact
-          </button>
+          <div className="flex flex-col gap-3 mt-6">
+            <button 
+              onClick={startAdd}
+              className="w-full py-[18px] bg-[#1f1f21] border border-dashed border-[#2a2a2c] rounded-2xl flex items-center justify-center gap-3 text-primary font-medium hover:bg-primary/10 transition-colors active:scale-[0.98]"
+            >
+              <UserPlus size={20} />
+              Add New Contact
+            </button>
+            <button 
+              onClick={pickContactFromPhone}
+              className="w-full py-[18px] bg-[#1f1f21] border border-dashed border-[#2a2a2c] rounded-2xl flex items-center justify-center gap-3 text-[#e4e2e4] font-medium hover:bg-[#2a2a2c] transition-colors active:scale-[0.98]"
+            >
+              <BookUser size={20} className="text-[#dac3ad]/80" />
+              Import from Phone
+            </button>
+          </div>
         )}
       </div>
     </div>
