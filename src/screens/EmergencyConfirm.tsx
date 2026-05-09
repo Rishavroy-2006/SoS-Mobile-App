@@ -16,6 +16,13 @@ import {
   Loader2,
 } from "lucide-react";
 import { Geolocation } from "@capacitor/geolocation";
+import {
+  sendSOSAlert,
+  updateSOSLocation,
+  updateSOSTelemetry,
+  updateSOSStatus,
+  type SOSAlertPayload,
+} from "../lib/firebase";
 
 interface EmergencyConfirmProps {
   onCancel: () => void;
@@ -33,25 +40,124 @@ const EmergencyConfirm: React.FC<EmergencyConfirmProps> = ({
   const [timerDuration, setTimerDuration] = useState<number | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const alertIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const sendAlert = async () => {
+    let isActive = true;
+    let watchId: string | number | null = null;
+    let telemetryInterval: NodeJS.Timeout | null = null;
+
+    const readTelemetry = async () => {
+      let batteryLevel = 1;
+      let isCharging = false;
+      let networkType = "Unknown";
+
       try {
-        await fetch("/api/alerts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: "user_active_1",
-            coords: { latitude: 34.0522, longitude: -118.2437 },
-            timestamp: new Date().toISOString(),
-            type: "PANIC_TRIGGER",
-          }),
+        if ("getBattery" in navigator) {
+          const battery = await (navigator as any).getBattery();
+          batteryLevel = battery?.level ?? 1;
+          isCharging = Boolean(battery?.charging);
+        }
+      } catch {
+        // Ignore telemetry errors
+      }
+
+      const connection =
+        (navigator as any).connection ||
+        (navigator as any).mozConnection ||
+        (navigator as any).webkitConnection;
+      if (connection) {
+        networkType = connection.effectiveType || connection.type || "Unknown";
+      }
+
+      return { batteryLevel, isCharging, networkType };
+    };
+
+    const createAlertPayload = async (): Promise<SOSAlertPayload> => {
+      try {
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 10000,
         });
-      } catch (e) {
-        console.error("Failed to send alert", e);
+        const { latitude, longitude } = position.coords;
+        const telemetry = await readTelemetry();
+
+        return {
+          latitude,
+          longitude,
+          timestamp: new Date().toISOString(),
+          status: "active",
+          transcript: "",
+          evidenceImages: [],
+          ...telemetry,
+        };
+      } catch {
+        const telemetry = await readTelemetry();
+        return {
+          latitude: null,
+          longitude: null,
+          timestamp: new Date().toISOString(),
+          status: "active",
+          transcript: "",
+          evidenceImages: [],
+          ...telemetry,
+        };
       }
     };
-    sendAlert();
+
+    const startAlert = async () => {
+      try {
+        const payload = await createAlertPayload();
+        const alertId = await sendSOSAlert(payload);
+        if (!isActive) return;
+
+        alertIdRef.current = alertId;
+
+        watchId = await Geolocation.watchPosition(
+          { enableHighAccuracy: true, timeout: 10000 },
+          async (position, error) => {
+            if (error || !position) return;
+            if (!alertIdRef.current) return;
+
+            await updateSOSLocation(
+              alertIdRef.current,
+              position.coords.latitude,
+              position.coords.longitude,
+            );
+          },
+        );
+
+        telemetryInterval = setInterval(async () => {
+          if (!alertIdRef.current) return;
+          const telemetry = await readTelemetry();
+          await updateSOSTelemetry(
+            alertIdRef.current,
+            telemetry.batteryLevel,
+            telemetry.isCharging,
+            telemetry.networkType,
+          );
+        }, 10000);
+      } catch (e) {
+        console.error("Failed to send SOS alert", e);
+      }
+    };
+
+    startAlert();
+
+    return () => {
+      isActive = false;
+      if (watchId !== null) {
+        Geolocation.clearWatch({ id: watchId });
+      }
+      if (telemetryInterval) {
+        clearInterval(telemetryInterval);
+      }
+      if (alertIdRef.current) {
+        updateSOSStatus(alertIdRef.current, "resolved").catch(() => {
+          // Ignore cleanup failures
+        });
+      }
+    };
   }, []);
 
   useEffect(() => {
