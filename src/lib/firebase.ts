@@ -8,13 +8,23 @@ import {
   Timestamp,
 } from "firebase/firestore";
 
+function requireEnv(key: string) {
+  const value = import.meta.env[key as keyof ImportMetaEnv] as
+    | string
+    | undefined;
+  if (!value) {
+    throw new Error(`Missing env var: ${key}`);
+  }
+  return value;
+}
+
 const firebaseConfig = {
-  apiKey: "AIzaSyC72k7ZhlWobsJ3zJcC2YkOhYfoQBQH89o",
-  authDomain: "sossystem12.firebaseapp.com",
-  projectId: "sossystem12",
-  storageBucket: "sossystem12.firebasestorage.app",
-  messagingSenderId: "304688779313",
-  appId: "1:304688779313:web:159be4892c6ca852f44510",
+  apiKey: requireEnv("VITE_FIREBASE_API_KEY"),
+  authDomain: requireEnv("VITE_FIREBASE_AUTH_DOMAIN"),
+  projectId: requireEnv("VITE_FIREBASE_PROJECT_ID"),
+  storageBucket: requireEnv("VITE_FIREBASE_STORAGE_BUCKET"),
+  messagingSenderId: requireEnv("VITE_FIREBASE_MESSAGING_SENDER_ID"),
+  appId: requireEnv("VITE_FIREBASE_APP_ID"),
 };
 
 const app = initializeApp(firebaseConfig);
