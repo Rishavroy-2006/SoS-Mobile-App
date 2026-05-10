@@ -35,6 +35,9 @@ export interface SOSAlertPayload {
   longitude: number | null;
   timestamp: string;
   status: "active" | "responding" | "resolved";
+  incidentType?: string;
+  threatLevel?: string;
+  priority?: "critical" | "high" | "medium";
   transcript?: string;
   address?: string;
   evidenceImages?: string[];

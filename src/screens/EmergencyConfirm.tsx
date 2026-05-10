@@ -19,6 +19,7 @@ import { Geolocation } from "@capacitor/geolocation";
 import {
   sendSOSAlert,
   updateSOSLocation,
+  updateSOSAddress,
   updateSOSTelemetry,
   updateSOSStatus,
   type SOSAlertPayload,
@@ -41,6 +42,46 @@ const EmergencyConfirm: React.FC<EmergencyConfirmProps> = ({
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const alertIdRef = useRef<string | null>(null);
+  const lastLocationRef = useRef<{ lat: number; lng: number } | null>(null);
+  const lastLocationAtRef = useRef<number>(0);
+  const lastAddressAtRef = useRef<number>(0);
+
+  const NOMINATIM_URL = "https://nominatim.openstreetmap.org/reverse";
+  const LOCATION_UPDATE_MS = 5000;
+  const LOCATION_UPDATE_METERS = 15;
+  const ADDRESS_UPDATE_MS = 30000;
+  const ADDRESS_UPDATE_METERS = 50;
+
+  const distanceMeters = (
+    a: { lat: number; lng: number },
+    b: { lat: number; lng: number },
+  ) => {
+    const toRad = (value: number) => (value * Math.PI) / 180;
+    const R = 6371000;
+    const dLat = toRad(b.lat - a.lat);
+    const dLng = toRad(b.lng - a.lng);
+    const lat1 = toRad(a.lat);
+    const lat2 = toRad(b.lat);
+
+    const h =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  };
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const res = await fetch(
+        `${NOMINATIM_URL}?format=json&lat=${lat}&lon=${lng}`,
+        { headers: { "Accept-Language": "en" } },
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data?.display_name || null;
+    } catch {
+      return null;
+    }
+  };
 
   useEffect(() => {
     let isActive = true;
@@ -119,11 +160,44 @@ const EmergencyConfirm: React.FC<EmergencyConfirmProps> = ({
             if (error || !position) return;
             if (!alertIdRef.current) return;
 
-            await updateSOSLocation(
-              alertIdRef.current,
-              position.coords.latitude,
-              position.coords.longitude,
-            );
+            const nextCoords = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            const now = Date.now();
+            const lastCoords = lastLocationRef.current;
+            const sinceLast = now - lastLocationAtRef.current;
+            const moved = lastCoords
+              ? distanceMeters(lastCoords, nextCoords)
+              : Infinity;
+
+            if (
+              sinceLast >= LOCATION_UPDATE_MS ||
+              moved >= LOCATION_UPDATE_METERS
+            ) {
+              lastLocationRef.current = nextCoords;
+              lastLocationAtRef.current = now;
+              await updateSOSLocation(
+                alertIdRef.current,
+                nextCoords.lat,
+                nextCoords.lng,
+              );
+            }
+
+            const sinceAddress = now - lastAddressAtRef.current;
+            if (
+              sinceAddress >= ADDRESS_UPDATE_MS ||
+              moved >= ADDRESS_UPDATE_METERS
+            ) {
+              const address = await reverseGeocode(
+                nextCoords.lat,
+                nextCoords.lng,
+              );
+              if (address) {
+                lastAddressAtRef.current = now;
+                await updateSOSAddress(alertIdRef.current, address);
+              }
+            }
           },
         );
 
